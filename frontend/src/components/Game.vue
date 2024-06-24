@@ -352,7 +352,7 @@ const endGame = () => {
     // Save score to localStorage
     const storedScores = JSON.parse(localStorage.getItem('tetrisScores') || '[]');
     storedScores.push(score.value);
-    localStorage.setItem('tetrisScores', JSON.stringify(storedScores.sort((a, b) => b - a).slice(0, 10)));
+    localStorage.setItem('tetrisScores', JSON.stringify(storedScores.sort((a: any, b: any) => b - a).slice(0, 10)));
 };
 
 let lastTime = 0;
