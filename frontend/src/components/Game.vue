@@ -50,7 +50,7 @@
             <button @click="goToMainMenu" class="main-menu-button">Main Menu</button>
         </div>
         <div v-if="gameOver" class="modal">
-            <div class="modal-content">
+            <div class="modal-content glassmorphism">
                 <h2>Game Over</h2>
                 <p>Would you like to try again or go back to the main menu?</p>
                 <button @click="resetGame">Try Again</button>
@@ -572,7 +572,7 @@ button:hover {
 .main-menu-button {
     margin-top: 20px;
     padding: 10px 20px;
-    background-color: #ff4444;
+    background-color: rgb(178, 67, 117);
     color: #fff;
     border: none;
     cursor: pointer;
@@ -580,7 +580,7 @@ button:hover {
 }
 
 .main-menu-button:hover {
-    background-color: #ff6666;
+    background-color: rgba(147, 68, 103, 1);
 }
 
 .score-board h2,
@@ -609,10 +609,13 @@ button:hover {
 }
 
 .modal-content {
-    background: #fff;
+    background: rgba(255, 255, 255, 0.15);
     padding: 20px;
-    border-radius: 5px;
+    border-radius: 10px;
     text-align: center;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .modal-content button {

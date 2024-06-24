@@ -10,7 +10,7 @@
         </ul>
       </div>
       <div class="contacts">
-        <a href="https://github.com/your-github-profile" target="_blank" aria-label="GitHub">
+        <a href="https://github.com/allybaubooa/tetrisparty.git" target="_blank" aria-label="GitHub">
           <i class="ri-github-fill"></i>
         </a>
         <a href="https://www.linkedin.com/in/allyhusseinbaubooa/" target="_blank" aria-label="LinkedIn">
