@@ -49,8 +49,17 @@
             </div>
             <button @click="goToMainMenu" class="main-menu-button">Main Menu</button>
         </div>
+        <div class="mobile-controls" v-if="isMobile">
+            <button @click="moveLeft" class="mobile-control left"><i class="ri-arrow-left-fill"></i></button>
+            <button @click="moveRight" class="mobile-control right"><i class="ri-arrow-right-fill"></i></button>
+            <button @click="rotatePiece" class="mobile-control rotate"><i class="ri-arrow-up-fill"></i></button>
+            <button @click="movePieceDown" class="mobile-control down"><i class="ri-arrow-down-fill"></i></button>
+            <button @click="dropPiece" class="mobile-control drop"><i class="ri-space"></i></button>
+            <button @click="toggleMute" class="mobile-control mute">{{ isMuted.value ? 'Unmute' : 'Mute' }}</button>
+            <button @click="goToMainMenu" class="mobile-control pause">Menu</button>
+        </div>
         <div v-if="gameOver" class="modal">
-            <div class="modal-content glassmorphism">
+            <div class="modal-content">
                 <h2>Game Over</h2>
                 <p>Would you like to try again or go back to the main menu?</p>
                 <button @click="resetGame">Try Again</button>
@@ -80,6 +89,7 @@ const isLineClearing = ref(false);
 const nextSpecialScore = ref(100);
 const dropInterval = ref(500); // Initial drop interval
 const speed = ref(1); // Initial speed level
+const isMobile = ref(false);
 
 const canvasWidth = 300;
 const canvasHeight = 600;
@@ -203,6 +213,7 @@ const spawnPiece = () => {
 };
 
 const movePieceDown = () => {
+    if (isPaused.value) return;
     state.currentY++;
     if (collision()) {
         state.currentY--;
@@ -216,6 +227,7 @@ const movePieceDown = () => {
 };
 
 const dropPiece = () => {
+    if (isPaused.value) return;
     playSound('/sounds/drop.mp3');
     while (!collision()) {
         state.currentY++;
@@ -295,21 +307,15 @@ const resetGame = () => {
 };
 
 const handleKeyPress = (event: KeyboardEvent) => {
-    if (gameOver.value) return;
+    if (gameOver.value || isPaused.value) return;
     switch (event.key) {
         case 'ArrowLeft':
             event.preventDefault();
-            state.currentX--;
-            if (collision()) {
-                state.currentX++;
-            }
+            moveLeft();
             break;
         case 'ArrowRight':
             event.preventDefault();
-            state.currentX++;
-            if (collision()) {
-                state.currentX--;
-            }
+            moveRight();
             break;
         case 'ArrowDown':
             event.preventDefault();
@@ -331,8 +337,24 @@ const handleKeyPress = (event: KeyboardEvent) => {
     }
 };
 
+const moveLeft = () => {
+    if (isPaused.value) return;
+    state.currentX--;
+    if (collision()) {
+        state.currentX++;
+    }
+};
+
+const moveRight = () => {
+    if (isPaused.value) return;
+    state.currentX++;
+    if (collision()) {
+        state.currentX--;
+    }
+};
+
 const rotatePiece = () => {
-    if (!state.currentPiece) return;
+    if (isPaused.value || !state.currentPiece) return;
     const newPiece = state.currentPiece[0].map((_, colIndex) =>
         state.currentPiece!.map(row => row[colIndex])
     ).reverse();
@@ -414,6 +436,10 @@ const toggleMute = () => {
     }
 };
 
+const checkIfMobile = () => {
+    isMobile.value = window.innerWidth <= 768;
+};
+
 onMounted(() => {
     if (gameCanvas.value && nextPieceCanvas.value) {
         const ctx = gameCanvas.value.getContext('2d');
@@ -424,6 +450,8 @@ onMounted(() => {
             if (!isMuted.value) {
                 playBackgroundSound('/sounds/bgm1.mp3');
             }
+            checkIfMobile();
+            window.addEventListener('resize', checkIfMobile);
         }
     }
 });
@@ -609,19 +637,19 @@ button:hover {
 }
 
 .modal-content {
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.1);
     padding: 20px;
     border-radius: 10px;
     text-align: center;
     backdrop-filter: blur(10px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #ffffff;
 }
 
 .modal-content button {
     margin: 10px;
     padding: 10px 20px;
-    background-color: #555;
+    background-color:rgba(147, 68, 103, 1);
     color: #fff;
     border: none;
     cursor: pointer;
@@ -629,6 +657,50 @@ button:hover {
 }
 
 .modal-content button:hover {
+    background-color: rgb(178, 67, 117);
+}
+
+.mobile-controls {
+    position: absolute;
+    bottom: 35px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    z-index: 10;
+}
+
+.mobile-control {
+    background-color: #555;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 20px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.mobile-control:hover {
     background-color: #777;
+}
+
+@media (max-width: 768px) {
+    .sidebar-left,
+    .sidebar-right {
+        display: none;
+    }
+
+    .game-container {
+        flex-direction: column;
+    }
+
+    .game {
+        order: 1;
+    }
+
+    .mobile-controls {
+        display: flex;
+    }
 }
 </style>

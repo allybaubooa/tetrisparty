@@ -108,7 +108,6 @@ button:hover {
   justify-content: center;
   gap: 10px;
   margin-top: 20px;
-  height: 15px;
 }
 
 .contacts a {
@@ -201,5 +200,31 @@ button:hover {
 .btn:active {
   color: #000;
   font-weight: bold;
+}
+
+@media (max-width: 768px) {
+  .menu-content {
+    width: 90%;
+    max-height: 100vh;
+    padding: 10px;
+  }
+
+  .logo {
+    width: 80%;
+    margin: 10px auto;
+  }
+
+  .contacts {
+    margin-top: 10px;
+    gap: 5px;
+  }
+
+  .contacts a {
+    font-size: 20px;
+  }
+
+  .footer {
+    font-size: 10px;
+  }
 }
 </style>
