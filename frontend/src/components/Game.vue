@@ -58,11 +58,9 @@
             <button @click="toggleMute" class="mobile-control mute">{{ isMuted.value ? 'Unmute' : 'Mute' }}</button>
             <button @click="goToMainMenu" class="mobile-control pause">Menu</button>
         </div>
-        <div class="mobile-controls" v-if="isMobile">
-        </div>
         <div v-if="gameOver" class="modal">
             <div class="modal-content">
-                <h2>Game Over</h2>
+                <h2>{{ highScoreReached ? 'Highscore Reached' : 'Game Over' }}</h2>
                 <p>Would you like to try again or go back to the main menu?</p>
                 <button @click="resetGame">Try Again</button>
                 <button @click="goToMainMenu">Main Menu</button>
@@ -78,6 +76,7 @@
 import { ref, onMounted, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import { playSound, playBackgroundSound, stopBackgroundSound, toggleMuteSound, isMuted } from '../utils/sound';
+import confetti from 'canvas-confetti';
 
 const router = useRouter();
 
@@ -92,6 +91,7 @@ const nextSpecialScore = ref(100);
 const dropInterval = ref(500); // Initial drop interval
 const speed = ref(1); // Initial speed level
 const isMobile = ref(false);
+const highScoreReached = ref(false);
 
 const canvasWidth = 300;
 const canvasHeight = 600;
@@ -298,6 +298,7 @@ const resetGame = () => {
     state.board = Array.from({ length: rows }, () => Array(cols).fill(0));
     score.value = 0;
     gameOver.value = false;
+    highScoreReached.value = false;
     isPaused.value = false;
     nextSpecialScore.value = 100;
     dropInterval.value = 500; // Reset to initial drop interval
@@ -368,15 +369,28 @@ const rotatePiece = () => {
 };
 
 const endGame = () => {
+    const storedScores = JSON.parse(localStorage.getItem('tetrisScores') || '[]');
+    const newHighScore = score.value > (storedScores[0] || 0);
+
+    if (newHighScore) {
+        highScoreReached.value = true;
+        triggerConfetti();
+        setTimeout(() => {
+            displayGameOverModal();
+        }, 5000); // Show confetti for 5 seconds before displaying the modal
+    } else {
+        displayGameOverModal();
+    }
+
+    storedScores.push(score.value);
+    localStorage.setItem('tetrisScores', JSON.stringify(storedScores.sort((a: any, b: any) => b - a).slice(0, 10)));
+};
+
+const displayGameOverModal = () => {
     gameOver.value = true;
     isPaused.value = true;
     playSound('/sounds/gameover.mp3');
     stopBackgroundSound();
-
-    // Save score to localStorage
-    const storedScores = JSON.parse(localStorage.getItem('tetrisScores') || '[]');
-    storedScores.push(score.value);
-    localStorage.setItem('tetrisScores', JSON.stringify(storedScores.sort((a: any, b: any) => b - a).slice(0, 10)));
 };
 
 let lastTime = 0;
@@ -427,6 +441,34 @@ const triggerSpecialEffect = () => {
     setTimeout(() => {
         showSpecialEffect.value = false;
     }, 2000); // Duration of the special effect
+};
+
+const triggerConfetti = () => {
+    const duration = 5 * 1000;
+    const end = Date.now() + duration;
+
+    const colors = ['#bb0000', '#ffffff'];
+
+    (function frame() {
+        confetti({
+            particleCount: 2,
+            angle: 60,
+            spread: 55,
+            origin: { x: 0 },
+            colors: colors
+        });
+        confetti({
+            particleCount: 2,
+            angle: 120,
+            spread: 55,
+            origin: { x: 1 },
+            colors: colors
+        });
+
+        if (Date.now() < end) {
+            requestAnimationFrame(frame);
+        }
+    })();
 };
 
 const toggleMute = () => {
