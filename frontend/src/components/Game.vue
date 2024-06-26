@@ -13,7 +13,6 @@
                 <h2>Speed</h2>
                 <p>{{ speed }}</p>
             </div>
-            <button @click="toggleMute" class="mute-button">{{ isMuted.value ? 'Unmute' : 'Mute' }}</button>
         </div>
         <div class="game">
             <canvas ref="gameCanvas" width="300" height="600"></canvas>
@@ -47,6 +46,7 @@
                     <p>Pause/Resume</p>
                 </div>
             </div>
+            <button @click="toggleMute" class="mute-button">{{ isMuted.value ? 'Unmute' : 'Mute' }}</button>
             <button @click="goToMainMenu" class="main-menu-button">Main Menu</button>
         </div>
         <div class="mobile-controls" v-if="isMobile">
@@ -57,6 +57,8 @@
             <button @click="dropPiece" class="mobile-control drop"><i class="ri-space"></i></button>
             <button @click="toggleMute" class="mobile-control mute">{{ isMuted.value ? 'Unmute' : 'Mute' }}</button>
             <button @click="goToMainMenu" class="mobile-control pause">Menu</button>
+        </div>
+        <div class="mobile-controls" v-if="isMobile">
         </div>
         <div v-if="gameOver" class="modal">
             <div class="modal-content">
@@ -73,7 +75,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, reactive, watch } from 'vue';
+import { ref, onMounted, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import { playSound, playBackgroundSound, stopBackgroundSound, toggleMuteSound, isMuted } from '../utils/sound';
 
@@ -307,27 +309,27 @@ const resetGame = () => {
 };
 
 const handleKeyPress = (event: KeyboardEvent) => {
-    if (gameOver.value || isPaused.value) return;
+    if (gameOver.value) return;
     switch (event.key) {
         case 'ArrowLeft':
             event.preventDefault();
-            moveLeft();
+            if (!isPaused.value) moveLeft();
             break;
         case 'ArrowRight':
             event.preventDefault();
-            moveRight();
+            if (!isPaused.value) moveRight();
             break;
         case 'ArrowDown':
             event.preventDefault();
-            movePieceDown();
+            if (!isPaused.value) movePieceDown();
             break;
         case 'ArrowUp':
             event.preventDefault();
-            rotatePiece();
+            if (!isPaused.value) rotatePiece();
             break;
         case ' ':
             event.preventDefault();
-            dropPiece();
+            if (!isPaused.value) dropPiece();
             break;
         case 'p':
         case 'P':
@@ -586,7 +588,7 @@ button:hover {
 .mute-button {
     margin-top: 20px;
     padding: 10px 20px;
-    background-color: #777;
+    background-color: #000000;
     color: #fff;
     border: none;
     cursor: pointer;
@@ -594,7 +596,7 @@ button:hover {
 }
 
 .mute-button:hover {
-    background-color: #999;
+    background-color: #242121;
 }
 
 .main-menu-button {
