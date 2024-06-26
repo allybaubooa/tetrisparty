@@ -390,7 +390,6 @@ const endGame = () => {
     }
 
     setTimeout(() => {
-        gameOver.value = false;
         highScoreReached.value = false;
     }, 5000);
 };
