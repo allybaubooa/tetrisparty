@@ -60,7 +60,7 @@
         </div>
         <div v-if="gameOver" class="modal">
             <div class="modal-content">
-                <h2>{{ highScoreReached ? 'Highscore Reached' : 'Game Over' }}</h2>
+                <h2>{{ highScoreReached ? 'Highscore Reached!' : 'Game Over' }}</h2>
                 <p>Would you like to try again or go back to the main menu?</p>
                 <button @click="resetGame">Try Again</button>
                 <button @click="goToMainMenu">Main Menu</button>
@@ -85,13 +85,13 @@ const nextPieceCanvas = ref<HTMLCanvasElement | null>(null);
 const isPaused = ref(false);
 const score = ref(0);
 const gameOver = ref(false);
+const highScoreReached = ref(false);
 const showSpecialEffect = ref(false);
 const isLineClearing = ref(false);
 const nextSpecialScore = ref(100);
 const dropInterval = ref(500); // Initial drop interval
 const speed = ref(1); // Initial speed level
 const isMobile = ref(false);
-const highScoreReached = ref(false);
 
 const canvasWidth = 300;
 const canvasHeight = 600;
@@ -369,28 +369,30 @@ const rotatePiece = () => {
 };
 
 const endGame = () => {
-    const storedScores = JSON.parse(localStorage.getItem('tetrisScores') || '[]');
-    const newHighScore = score.value > (storedScores[0] || 0);
-
-    if (newHighScore) {
-        highScoreReached.value = true;
-        triggerConfetti();
-        setTimeout(() => {
-            displayGameOverModal();
-        }, 5000); // Show confetti for 5 seconds before displaying the modal
-    } else {
-        displayGameOverModal();
-    }
-
-    storedScores.push(score.value);
-    localStorage.setItem('tetrisScores', JSON.stringify(storedScores.sort((a: any, b: any) => b - a).slice(0, 10)));
-};
-
-const displayGameOverModal = () => {
     gameOver.value = true;
     isPaused.value = true;
     playSound('/sounds/gameover.mp3');
     stopBackgroundSound();
+
+    // Save score to localStorage
+    const storedScores = JSON.parse(localStorage.getItem('tetrisScores') || '[]');
+    const isNewHighScore = score.value > Math.max(...storedScores, 0);
+    storedScores.push(score.value);
+    localStorage.setItem('tetrisScores', JSON.stringify(storedScores.sort((a: any, b: any) => b - a).slice(0, 10)));
+
+    if (isNewHighScore) {
+        highScoreReached.value = true;
+        confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 }
+        });
+    }
+
+    setTimeout(() => {
+        gameOver.value = false;
+        highScoreReached.value = false;
+    }, 5000);
 };
 
 let lastTime = 0;
@@ -441,34 +443,6 @@ const triggerSpecialEffect = () => {
     setTimeout(() => {
         showSpecialEffect.value = false;
     }, 2000); // Duration of the special effect
-};
-
-const triggerConfetti = () => {
-    const duration = 5 * 1000;
-    const end = Date.now() + duration;
-
-    const colors = ['#bb0000', '#ffffff'];
-
-    (function frame() {
-        confetti({
-            particleCount: 2,
-            angle: 60,
-            spread: 55,
-            origin: { x: 0 },
-            colors: colors
-        });
-        confetti({
-            particleCount: 2,
-            angle: 120,
-            spread: 55,
-            origin: { x: 1 },
-            colors: colors
-        });
-
-        if (Date.now() < end) {
-            requestAnimationFrame(frame);
-        }
-    })();
 };
 
 const toggleMute = () => {
